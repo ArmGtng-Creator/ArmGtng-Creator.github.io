@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Armand Halim — Systems &amp; AI Infrastructure Engineer</title>
+  <meta name="description" content="Personal portfolio and engineering log of Armand Halim. Systems, reverse proxies, and AI infrastructure.">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --text: #171717;
+      --muted: #737373;
+      --border: #e5e5e5;
+      --card-bg: #ffffff;
+      --tag-bg: #f4f4f5;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0a0a0a;
+        --text: #ededed;
+        --muted: #a1a1aa;
+        --border: #262626;
+        --card-bg: #121212;
+        --tag-bg: #1e1e1e;
+        --accent: #38bdf8;
+        --accent-hover: #7dd3fc;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      padding: 48px 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 48px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background-color: #22c55e;
+      border-radius: 50%;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .lead {
+      font-size: 1.05rem;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.9rem;
+      font-family: var(--font-mono);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-color: var(--border);
+      transition: text-decoration-color 0.15s ease, color 0.15s ease;
+    }
+
+    a:hover {
+      text-decoration-color: var(--accent);
+      color: var(--accent-hover);
+    }
+
+    section {
+      margin-bottom: 48px;
+    }
+
+    h2 {
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    .about p {
+      margin-bottom: 12px;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .project-item {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .project-item:first-child {
+      padding-top: 0;
+    }
+
+    .project-item:last-child {
+      border-bottom: none;
+    }
+
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .project-title {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .project-year {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .project-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      background: var(--tag-bg);
+      color: var(--muted);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 16px;
+      margin-bottom: 18px;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 520px) {
+      .timeline-item {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+    }
+
+    .timeline-date {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .timeline-role {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .timeline-desc {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 12px;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+
+    .skill-cat {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .skill-list {
+      color: var(--text);
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    @media print {
+      body {
+        background: white;
+        color: black;
+        padding: 0;
+      }
+      .status-badge, .nav-links a {
+        border: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        <span>Open for engineering roles &amp; consulting</span>
+      </div>
+      <h1>Armand Halim</h1>
+      <p class="lead">Systems &amp; AI Infrastructure Engineer</p>
+      <nav class="nav-links">
+        <a href="mailto:armand@amgsh.my.id">Email</a>
+        <a href="https://github.com/ArmGtng-Creator" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://amgsh.my.id" target="_blank" rel="noopener">amgsh.my.id</a>
+        <a href="https://router.juan.web.id" target="_blank" rel="noopener">router.juan.web.id</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="about">
+        <h2>Tentang</h2>
+        <p>
+          Software engineer berfokus pada AI inference gateways, edge proxy routing, dan otomasi infrastruktur Linux. Berpengalaman merancang sistem relay API berperforma tinggi dengan latensi rendah di lingkungan server terbatas.
+        </p>
+        <p>
+          Mengutamakan kesederhanaan arsitektur: native Unix primitives over bloat, single-binary tools over complex orchestration, dan keandalan sistem tanpa downtime.
+        </p>
+      </section>
+
+      <section>
+        <h2>Proyek Pilihan</h2>
+
+        <article class="project-item">
+          <div class="project-header">
+            <span class="project-title">
+              <a href="https://router.juan.web.id" target="_blank" rel="noopener">Multi-Provider AI Gateway (9router)</a>
+            </span>
+            <span class="project-year">2025</span>
+          </div>
+          <p class="project-desc">
+            Universal reverse proxy &amp; router untuk multi-provider LLM (OpenAI, Anthropic Claude, Google Gemini). Mendukung streaming SSE terpadu, token translation otomatis, load balancing antar upstream API key, dan failover zero-downtime.
+          </p>
+          <div class="tags">
+            <span class="tag">Node.js</span>
+            <span class="tag">SSE / Streaming</span>
+            <span class="tag">Reverse Proxy</span>
+            <span class="tag">REST API</span>
+          </div>
+        </article>
+
+        <article class="project-item">
+          <div class="project-header">
+            <span class="project-title">
+              <a href="https://amgsh.my.id" target="_blank" rel="noopener">Zero-Trust Edge Tunnel &amp; Ingress Mesh</a>
+            </span>
+            <span class="project-year">2025</span>
+          </div>
+          <p class="project-desc">
+            Arsitektur ingress aman berbasis Cloudflare Tunnels (HTTP/2 multiplexing) dan Nginx reverse proxy. Mengamankan private server tanpa membuka port publik publik (inbound port 80/443 closed di hardware firewall) dengan mitigasi DDoS native Cloudflare.
+          </p>
+          <div class="tags">
+            <span class="tag">Cloudflare Tunnels</span>
+            <span class="tag">Nginx</span>
+            <span class="tag">Linux Networking</span>
+            <span class="tag">Security</span>
+          </div>
+        </article>
+
+        <article class="project-item">
+          <div class="project-header">
+            <span class="project-title">
+              <span>Autonomous Agent Runtime Harness</span>
+            </span>
+            <span class="project-year">2024 &mdash; 2025</span>
+          </div>
+          <p class="project-desc">
+            Pipeline eksekusi agen LLM otonom (Hermes Agent &amp; OpenCode) pada VPS spek efisien (2 vCPU / 8 GB RAM). Diintegrasikan dengan local persistent session storage, memory checkpointing, dan sandboxed Bash tool execution.
+          </p>
+          <div class="tags">
+            <span class="tag">Python</span>
+            <span class="tag">Autonomous Agents</span>
+            <span class="tag">Ollama</span>
+            <span class="tag">Bash</span>
+          </div>
+        </article>
+      </section>
+
+      <section>
+        <h2>Pengalaman</h2>
+
+        <div class="timeline-item">
+          <div class="timeline-date">2024 &mdash; Sekarang</div>
+          <div>
+            <div class="timeline-role">Infrastructure &amp; Systems Engineer &mdash; Self-Hosted / Independent</div>
+            <div class="timeline-desc">
+              Merancang dan mengoperasikan node relay AI pribadi, manajemen memory paging &amp; swap tune pada Linux kernel, serta orkestrasi process lifecycle menggunakan PM2 dan systemd.
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-date">2022 &mdash; 2024</div>
+          <div>
+            <div class="timeline-role">Backend Developer &mdash; Distributed Web Services</div>
+            <div class="timeline-desc">
+              Mengembangkan API backend microservices, optimasi query database, implementasi caching layer dengan Redis, serta integrasi webhook payment gateway pihak ketiga.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Keahlian Teknis</h2>
+        <div class="skills-grid">
+          <span class="skill-cat">Bahasa</span>
+          <span class="skill-list">TypeScript, JavaScript (Node.js), Python, Bash Shell, SQL</span>
+        </div>
+        <div class="skills-grid">
+          <span class="skill-cat">AI &amp; Protocols</span>
+          <span class="skill-list">OpenAI API, Anthropic Messages API, Google GenAI, Server-Sent Events (SSE), WebSocket</span>
+        </div>
+        <div class="skills-grid">
+          <span class="skill-cat">Sistem &amp; Infra</span>
+          <span class="skill-list">Linux (Ubuntu/Debian), Nginx, Cloudflare Tunnels, PM2, Systemd, UFW, Docker</span>
+        </div>
+        <div class="skills-grid">
+          <span class="skill-cat">Database</span>
+          <span class="skill-list">PostgreSQL, Redis, SQLite</span>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>&copy; 2026 Armand Halim. All rights reserved.</span>
+      <span>No cookies. No tracking. Pure static HTML/CSS.</span>
+    </footer>
+  </div>
+</body>
+</html>
