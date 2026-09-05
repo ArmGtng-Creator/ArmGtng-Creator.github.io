@@ -615,8 +615,22 @@
         
         <!-- Base URL -->
         <div>
-          <label class="block text-xs font-semibold mb-1" style="color: var(--text-muted);">API BASE URL</label>
-          <input id="input-api-url" type="url" value="https://router.juan.web.id/v1" class="w-full px-3 py-2 rounded-xl border outline-none font-mono text-xs focus:ring-2 focus:ring-amber-500/20" style="background-color: var(--bg-surface); border-color: var(--border-color); color: var(--text-main);" required>
+          <label class="block text-xs font-semibold mb-1" style="color: var(--text-muted);">API BASE URL (OpenAI-Compatible Endpoint)</label>
+          <input id="input-api-url" type="text" placeholder="https://api.openai.com/v1 atau https://openrouter.ai/api/v1" class="w-full px-3 py-2 rounded-xl border outline-none font-mono text-xs focus:ring-2 focus:ring-amber-500/20" style="background-color: var(--bg-surface); border-color: var(--border-color); color: var(--text-main);" required>
+          <div class="flex flex-wrap gap-1.5 mt-2">
+            <button type="button" class="quick-url-btn px-2 py-1 rounded-lg border text-[10px] font-mono opacity-80 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5" style="border-color: var(--border-color);" data-url="https://router.juan.web.id/v1">
+              juan.web.id
+            </button>
+            <button type="button" class="quick-url-btn px-2 py-1 rounded-lg border text-[10px] font-mono opacity-80 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5" style="border-color: var(--border-color);" data-url="https://openrouter.ai/api/v1">
+              openrouter.ai
+            </button>
+            <button type="button" class="quick-url-btn px-2 py-1 rounded-lg border text-[10px] font-mono opacity-80 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5" style="border-color: var(--border-color);" data-url="https://api.openai.com/v1">
+              openai.com
+            </button>
+            <button type="button" class="quick-url-btn px-2 py-1 rounded-lg border text-[10px] font-mono opacity-80 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5" style="border-color: var(--border-color);" data-url="http://localhost:11434/v1">
+              ollama (local)
+            </button>
+          </div>
         </div>
 
         <!-- API Key -->
@@ -639,11 +653,14 @@
             </button>
           </div>
           <div class="relative">
-            <select id="select-model" class="w-full px-3 py-2 rounded-xl border outline-none text-xs font-mono appearance-none" style="background-color: var(--bg-surface); border-color: var(--border-color); color: var(--text-main);">
-              <option value="deepseek-v4-flash">deepseek-v4-flash</option>
-            </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 opacity-60">
-              <i data-lucide="chevron-down" class="w-4 h-4"></i>
+            <input id="input-custom-model" type="text" placeholder="Ketik nama model manual jika tidak muncul di dropdown..." class="w-full mb-1.5 px-3 py-1.5 rounded-xl border outline-none text-xs font-mono" style="background-color: var(--bg-surface); border-color: var(--border-color); color: var(--text-main);">
+            <div class="relative">
+              <select id="select-model" class="w-full px-3 py-2 rounded-xl border outline-none text-xs font-mono appearance-none" style="background-color: var(--bg-surface); border-color: var(--border-color); color: var(--text-main);">
+                <option value="deepseek-v4-flash">deepseek-v4-flash</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 opacity-60">
+                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+              </div>
             </div>
           </div>
           <p id="model-fetch-status" class="text-[11px] mt-1" style="color: var(--text-subtle);"></p>
@@ -2232,12 +2249,25 @@
         });
       });
 
+      document.querySelectorAll('.quick-url-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const url = btn.getAttribute('data-url');
+          if (url) {
+            document.getElementById('input-api-url').value = url;
+            document.getElementById('input-api-url').focus();
+          }
+        });
+      });
+
       // API Settings Form
       document.getElementById('form-api-settings').addEventListener('submit', (e) => {
         e.preventDefault();
-        AppState.api.url = document.getElementById('input-api-url').value.trim();
+        const newUrl = document.getElementById('input-api-url').value.trim().replace(/\/+$/, '');
+        const manualModel = document.getElementById('input-custom-model').value.trim();
+        const selectedModel = document.getElementById('select-model').value;
+        AppState.api.url = newUrl;
         AppState.api.key = document.getElementById('input-api-key').value.trim();
-        AppState.api.model = document.getElementById('select-model').value;
+        AppState.api.model = manualModel || selectedModel || AppState.api.model;
         AppState.api.temperature = parseFloat(document.getElementById('input-temperature').value);
         saveState();
         updateRouterDisplay();
