@@ -853,6 +853,27 @@
     </div>
   </div>
 
+  <!-- 6. CUSTOM CONFIRMATION MODAL -->
+  <div id="modal-confirm" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="w-full max-w-sm rounded-2xl p-5 sm:p-6 shadow-2xl border fade-enter text-center" style="background-color: var(--bg-paper); border-color: var(--border-color); color: var(--text-main);">
+      <div class="w-12 h-12 rounded-2xl mx-auto flex items-center justify-center mb-3 text-rose-500 bg-rose-500/10 border border-rose-500/20">
+        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+      </div>
+      <h3 id="confirm-modal-title" class="font-bold text-base mb-1.5 font-sans">Konfirmasi Tindakan</h3>
+      <p id="confirm-modal-desc" class="text-xs mb-5 font-sans leading-relaxed" style="color: var(--text-muted);">
+        Apakah Anda yakin ingin melanjutkan?
+      </p>
+      <div class="flex gap-2 font-sans">
+        <button type="button" id="btn-confirm-cancel" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-semibold border smooth-transition hover:bg-black/5 dark:hover:bg-white/5" style="border-color: var(--border-color);">
+          Batal
+        </button>
+        <button type="button" id="btn-confirm-ok" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 smooth-transition shadow-sm active:scale-95">
+          Ya, Hapus
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
@@ -1616,32 +1637,54 @@
       showToast("Kisah baru siap dimulai!");
     }
 
+    let confirmCallback = null;
+    function showConfirmDialog({ title, desc, onConfirm, okText = "Ya, Hapus" }) {
+      document.getElementById('confirm-modal-title').textContent = title || "Konfirmasi";
+      document.getElementById('confirm-modal-desc').textContent = desc || "Apakah Anda yakin ingin melanjutkan?";
+      const okBtn = document.getElementById('btn-confirm-ok');
+      okBtn.textContent = okText;
+      confirmCallback = onConfirm;
+      openModal('modal-confirm');
+    }
+
     function deleteSession(sessionId) {
       if (AppState.sessions.length <= 1) {
         showToast("Minimal harus ada satu sesi cerita.", "error");
         return;
       }
-      if (!confirm("Hapus seluruh naskah dan riwayat sesi ini?")) return;
 
-      AppState.sessions = AppState.sessions.filter(s => s.id !== sessionId);
-      if (AppState.activeSessionId === sessionId) {
-        AppState.activeSessionId = AppState.sessions[0].id;
-      }
-      saveState();
-      renderSessionsList();
-      renderStoryMessages();
-      showToast("Sesi berhasil dihapus.");
+      showConfirmDialog({
+        title: "Hapus Sesi Cerita?",
+        desc: "Seluruh naskah dan riwayat percakapan sesi ini akan dihapus permanen.",
+        okText: "Hapus Sesi",
+        onConfirm: () => {
+          AppState.sessions = AppState.sessions.filter(s => s.id !== sessionId);
+          if (AppState.activeSessionId === sessionId) {
+            AppState.activeSessionId = AppState.sessions[0].id;
+          }
+          saveState();
+          renderSessionsList();
+          renderStoryMessages();
+          showToast("Sesi berhasil dihapus.");
+        }
+      });
     }
 
     function deleteMessageTurn(index) {
       const session = getActiveSession();
       if (!session || !session.messages[index]) return;
 
-      if (!confirm("Hapus giliran cerita ini?")) return;
-      session.messages.splice(index, 1);
-      saveState();
-      renderStoryMessages();
-      renderSessionsList();
+      showConfirmDialog({
+        title: "Hapus Giliran Ini?",
+        desc: "Pesan ini akan dihapus dari alur cerita.",
+        okText: "Hapus",
+        onConfirm: () => {
+          session.messages.splice(index, 1);
+          saveState();
+          renderStoryMessages();
+          renderSessionsList();
+        }
+      });
     }
 
     let editingMessageIndex = null;
@@ -2229,10 +2272,26 @@
       document.getElementById('input-import-json').addEventListener('change', handleImportJson);
 
       document.getElementById('btn-reset-all-data').addEventListener('click', () => {
-        if (confirm("PERINGATAN: Seluruh data cerita dan pengaturan akan dihapus dan kembali ke awal. Lanjutkan?")) {
-          localStorage.removeItem(STATE_KEY);
-          location.reload();
-        }
+        showConfirmDialog({
+          title: "Reset Seluruh Data?",
+          desc: "PERINGATAN: Seluruh naskah cerita dan konfigurasi akan dihapus dan kembali ke setelan default.",
+          okText: "Reset Total",
+          onConfirm: () => {
+            localStorage.removeItem(STATE_KEY);
+            location.reload();
+          }
+        });
+      });
+
+      // Confirm modal buttons
+      document.getElementById('btn-confirm-cancel').addEventListener('click', () => {
+        closeModal('modal-confirm');
+        confirmCallback = null;
+      });
+      document.getElementById('btn-confirm-ok').addEventListener('click', () => {
+        if (confirmCallback) confirmCallback();
+        closeModal('modal-confirm');
+        confirmCallback = null;
       });
     }
 
