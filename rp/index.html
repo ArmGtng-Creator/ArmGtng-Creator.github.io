@@ -1848,41 +1848,97 @@
     }
 
     function downloadJsonBackup() {
-      const dataStr = JSON.stringify(AppState, null, 2);
-      const blob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `RP_Story_Backup_${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast("Backup JSON berhasil diunduh!");
+      try {
+        saveState(); // Pastikan state terbaru tersimpan dulu
+        const dataStr = JSON.stringify(AppState, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        const dateStamp = new Date().toISOString().slice(0, 10);
+        a.download = `RP_Story_Backup_${dateStamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 300);
+        showToast("Backup JSON berhasil diunduh!");
+      } catch (err) {
+        showToast("Gagal mengunduh backup: " + err.message, "error");
+      }
     }
 
     function handleImportJson(event) {
-      const file = event.target.files[0];
+      const input = event.target;
+      const file = input.files?.[0];
       if (!file) return;
 
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
           const imported = JSON.parse(e.target.result);
-          if (imported.sessions && Array.isArray(imported.sessions)) {
-            AppState = imported;
-            saveState();
-            applyReaderSettings();
-            renderSessionsList();
-            renderStoryMessages();
-            closeModal('modal-backup');
-            showToast("Data berhasil dipulihkan!");
-          } else {
-            showToast("Format file JSON tidak valid.", "error");
+          
+          // Validasi ketat format backup
+          if (!imported || typeof imported !== 'object') {
+            throw new Error("Isi file bukan objek data yang valid.");
           }
+
+          if (!imported.sessions || !Array.isArray(imported.sessions) || imported.sessions.length === 0) {
+            throw new Error("File backup tidak memiliki daftar sesi cerita (sessions array kosong).");
+          }
+
+          // Normalisasi dan sanitasi struktur data
+          AppState = {
+            ...defaultState,
+            ...imported,
+            api: {
+              ...defaultState.api,
+              ...(imported.api || {})
+            },
+            reader: {
+              ...defaultState.reader,
+              ...(imported.reader || {})
+            },
+            sessions: imported.sessions.map((s, idx) => ({
+              id: s.id || `sess_${Date.now()}_${idx}`,
+              title: s.title || `Sesi ${idx + 1}`,
+              avatar: s.avatar || 'book',
+              aiName: s.aiName || 'AI Narrator',
+              userName: s.userName || 'Penulis',
+              system: s.system || defaultState.sessions?.[0]?.system || '',
+              createdAt: s.createdAt || new Date().toISOString(),
+              updatedAt: s.updatedAt || new Date().toISOString(),
+              messages: Array.isArray(s.messages) ? s.messages : []
+            }))
+          };
+
+          // Pastikan activeSessionId mengarah ke id yang benar-benar ada
+          if (!AppState.sessions.some(s => s.id === AppState.activeSessionId)) {
+            AppState.activeSessionId = AppState.sessions[0].id;
+          }
+
+          saveState();
+          applyReaderSettings();
+          updateRouterDisplay();
+          renderSessionsList();
+          renderStoryMessages();
+          closeModal('modal-backup');
+          showToast(`Sukses memulihkan ${AppState.sessions.length} sesi cerita!`);
         } catch (err) {
-          showToast("Gagal membaca file JSON: " + err.message, "error");
+          showToast("Gagal memulihkan data: " + err.message, "error");
+        } finally {
+          input.value = ''; // Reset input agar bisa pilih file yang sama kembali
         }
       };
-      reader.readAsText(file);
+
+      reader.onerror = () => {
+        showToast("Gagal membaca file dari penyimpanan perangkat.", "error");
+        input.value = '';
+      };
+
+      reader.readAsText(file, 'utf-8');
     }
 
     // --- 8. MODAL & UI CONTROLLERS ---
