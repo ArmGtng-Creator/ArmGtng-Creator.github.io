@@ -838,10 +838,15 @@
           <label class="block text-xs font-semibold mb-1" style="color: var(--text-muted);">IMPOR DATA (JSON)</label>
           <p class="text-xs mb-2" style="color: var(--text-subtle);">Pulihkan data cerita dari file backup JSON sebelumnya.</p>
           <input type="file" id="input-import-json" accept=".json" class="hidden">
-          <button id="btn-trigger-import-json" class="w-full py-2.5 px-3 rounded-xl border flex items-center justify-center gap-2 font-medium hover:bg-black/5 dark:hover:bg-white/5 smooth-transition" style="border-color: var(--border-color);">
-            <i data-lucide="upload" class="w-4 h-4"></i>
-            <span>Pilih File JSON</span>
-          </button>
+          
+          <!-- Drag & Drop Zone -->
+          <div id="dropzone-backup" class="w-full p-4 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-1.5 cursor-pointer smooth-transition text-center" style="border-color: var(--border-color); background-color: var(--bg-surface);">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-inherit opacity-70 mb-0.5">
+              <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+            </div>
+            <div class="font-semibold text-xs">Tarik & Lepas File JSON Di Sini</div>
+            <div class="text-[10px] opacity-60">atau <span class="underline" style="color: var(--accent);">klik untuk jelajahi berkas</span></div>
+          </div>
         </div>
 
         <div class="pt-3 border-t" style="border-color: var(--border-color);">
@@ -1870,17 +1875,18 @@
       }
     }
 
-    function handleImportJson(event) {
-      const input = event.target;
-      const file = input.files?.[0];
+    function processBackupFile(file) {
       if (!file) return;
+      if (!file.name.endsWith('.json') && file.type && !file.type.includes('json')) {
+        showToast("Mohon pilih berkas dengan format .json", "error");
+        return;
+      }
 
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
           const imported = JSON.parse(e.target.result);
           
-          // Validasi ketat format backup
           if (!imported || typeof imported !== 'object') {
             throw new Error("Isi file bukan objek data yang valid.");
           }
@@ -1889,7 +1895,6 @@
             throw new Error("File backup tidak memiliki daftar sesi cerita (sessions array kosong).");
           }
 
-          // Normalisasi dan sanitasi struktur data
           AppState = {
             ...defaultState,
             ...imported,
@@ -1914,7 +1919,6 @@
             }))
           };
 
-          // Pastikan activeSessionId mengarah ke id yang benar-benar ada
           if (!AppState.sessions.some(s => s.id === AppState.activeSessionId)) {
             AppState.activeSessionId = AppState.sessions[0].id;
           }
@@ -1928,17 +1932,23 @@
           showToast(`Sukses memulihkan ${AppState.sessions.length} sesi cerita!`);
         } catch (err) {
           showToast("Gagal memulihkan data: " + err.message, "error");
-        } finally {
-          input.value = ''; // Reset input agar bisa pilih file yang sama kembali
         }
       };
 
       reader.onerror = () => {
-        showToast("Gagal membaca file dari penyimpanan perangkat.", "error");
-        input.value = '';
+        showToast("Gagal membaca file dari perangkat.", "error");
       };
 
       reader.readAsText(file, 'utf-8');
+    }
+
+    function handleImportJson(event) {
+      const input = event.target;
+      const file = input.files?.[0];
+      if (file) {
+        processBackupFile(file);
+      }
+      input.value = '';
     }
 
     // --- 8. MODAL & UI CONTROLLERS ---
@@ -2322,10 +2332,41 @@
 
       // Backup & Restore
       document.getElementById('btn-download-json-backup').addEventListener('click', downloadJsonBackup);
-      document.getElementById('btn-trigger-import-json').addEventListener('click', () => {
-        document.getElementById('input-import-json').click();
+      
+      const dropzone = document.getElementById('dropzone-backup');
+      const fileInput = document.getElementById('input-import-json');
+
+      dropzone.addEventListener('click', () => {
+        fileInput.click();
       });
-      document.getElementById('input-import-json').addEventListener('change', handleImportJson);
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.style.borderColor = 'var(--accent)';
+          dropzone.style.backgroundColor = 'var(--accent-light)';
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.style.borderColor = 'var(--border-color)';
+          dropzone.style.backgroundColor = 'var(--bg-surface)';
+        });
+      });
+
+      dropzone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files && files.length > 0) {
+          processBackupFile(files[0]);
+        }
+      });
+
+      fileInput.addEventListener('change', handleImportJson);
 
       document.getElementById('btn-reset-all-data').addEventListener('click', () => {
         showConfirmDialog({
