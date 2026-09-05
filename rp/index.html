@@ -890,15 +890,14 @@
      */
 
     // --- 1. PRESETS & SCENARIOS ---
-      const initialUser = AppState.defaultUserName || 'Armand';
-      const BLANK_SESSION = {
-        title: "Kisah Baru",
-        avatar: "book-open",
-        aiName: "AI Narrator",
-        userName: initialUser,
-        system: "Anda adalah AI Assistant dan partner roleplay yang mendalam, imersif, dan adaptif terhadap alur cerita yang dibangun bersama user. Tulis dalam gaya novel sastra dengan format *narasi/tindakan* dan \"dialog ucapan\".",
-        greeting: ""
-      };
+    const BLANK_SESSION = {
+      title: "Kisah Baru",
+      avatar: "book-open",
+      aiName: "AI Narrator",
+      userName: "Armand",
+      system: "Anda adalah AI Assistant dan partner roleplay yang mendalam, imersif, dan adaptif terhadap alur cerita yang dibangun bersama user. Tulis dalam gaya novel sastra dengan format *narasi/tindakan* dan \"dialog ucapan\".",
+      greeting: ""
+    };
 
     const PRESETS = {
       blank: BLANK_SESSION,
