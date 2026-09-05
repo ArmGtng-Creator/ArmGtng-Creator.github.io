@@ -890,14 +890,15 @@
      */
 
     // --- 1. PRESETS & SCENARIOS ---
-    const BLANK_SESSION = {
-      title: "Kisah Baru",
-      avatar: "book-open",
-      aiName: "AI Narrator",
-      userName: "Penulis",
-      system: "Anda adalah AI Assistant dan partner roleplay yang mendalam, imersif, dan adaptif terhadap alur cerita yang dibangun bersama user. Tulis dalam gaya novel sastra dengan format *narasi/tindakan* dan \"dialog ucapan\".",
-      greeting: ""
-    };
+      const initialUser = AppState.defaultUserName || 'Armand';
+      const BLANK_SESSION = {
+        title: "Kisah Baru",
+        avatar: "book-open",
+        aiName: "AI Narrator",
+        userName: initialUser,
+        system: "Anda adalah AI Assistant dan partner roleplay yang mendalam, imersif, dan adaptif terhadap alur cerita yang dibangun bersama user. Tulis dalam gaya novel sastra dengan format *narasi/tindakan* dan \"dialog ucapan\".",
+        greeting: ""
+      };
 
     const PRESETS = {
       blank: BLANK_SESSION,
@@ -2277,14 +2278,39 @@
           const presetKey = btn.getAttribute('data-preset');
           const p = PRESETS[presetKey];
           if (p) {
+            // Ambil nama user yang sedang aktif atau yang sudah diketik di form
+            const currentUserName = document.getElementById('input-persona-user-name').value.trim() 
+              || getActiveSession()?.userName 
+              || AppState.defaultUserName 
+              || p.userName 
+              || 'Armand';
+
+            const defaultPresetUser = p.userName || 'User';
+
+            // Ganti nama user default di skenario dengan nama user yang diinput
+            const replaceUserName = (text) => {
+              if (!text) return '';
+              const regex = new RegExp(`\\b${defaultPresetUser}\\b`, 'gi');
+              return text.replace(regex, currentUserName);
+            };
+
             document.getElementById('input-persona-title').value = p.title;
             document.getElementById('input-persona-avatar').value = p.avatar;
             document.getElementById('input-persona-ai-name').value = p.aiName;
-            document.getElementById('input-persona-user-name').value = p.userName;
-            document.getElementById('input-persona-system').value = p.system;
-            document.getElementById('input-persona-greeting').value = p.greeting;
+            document.getElementById('input-persona-user-name').value = currentUserName;
+            document.getElementById('input-persona-system').value = replaceUserName(p.system);
+            document.getElementById('input-persona-greeting').value = replaceUserName(p.greeting);
           }
         });
+      });
+
+      // Simpan nama user jika diketik manual agar diingat terus
+      document.getElementById('input-persona-user-name').addEventListener('input', (e) => {
+        const val = e.target.value.trim();
+        if (val) {
+          AppState.defaultUserName = val;
+          saveState();
+        }
       });
 
       document.getElementById('form-persona').addEventListener('submit', (e) => {
@@ -2406,10 +2432,11 @@
     function hydratePersonaModal() {
       const session = getActiveSession();
       if (!session) return;
+      const user = AppState.defaultUserName || session?.userName || 'Armand';
       document.getElementById('input-persona-title').value = session.title;
       document.getElementById('input-persona-avatar').value = session.avatar || 'book';
       document.getElementById('input-persona-ai-name').value = session.aiName;
-      document.getElementById('input-persona-user-name').value = session.userName;
+      document.getElementById('input-persona-user-name').value = user;
       document.getElementById('input-persona-system').value = session.system;
       document.getElementById('input-persona-greeting').value = session.messages[0]?.content || '';
     }
