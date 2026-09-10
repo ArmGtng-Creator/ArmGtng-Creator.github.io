@@ -1891,14 +1891,66 @@
       showToast("Giliran terakhir dihapus.");
     }
 
-    function continueStoryPrompt() {
+    async function continueStoryPrompt() {
       const session = getActiveSession();
       if (!session) return;
-      if (!session.messages || session.messages.length === 0) {
-        handleSendMessage("[Mulai babak pembuka cerita. Deskripsikan suasana lingkungan awal dan perkenalkan latar serta situasi secara mendalam...]");
-      } else {
-        handleSendMessage("[Lanjutkan narasi cerita berikutnya, kembangkan suasana dan tindakan karakter sesuai alur...]");
-      }
+      if (DOM.storyInput.disabled) return; // masih streaming
+
+      const isOpening = !session.messages || session.messages.length === 0;
+      const context = isOpening ? [] : session.messages.slice(-10);
+
+      // 1. Slot pesan AI baru (tanpa menyisipkan pesan user palsu)
+      const aiMsg = {
+        id: 'msg_' + (Date.now() + 1),
+        role: 'assistant',
+        content: '',
+        variants: [''],
+        variantIndex: 0,
+        timestamp: new Date().toISOString()
+      };
+      session.messages.push(aiMsg);
+
+      const aiTurnEl = createMessageElement(aiMsg, session.messages.length - 1, session);
+      DOM.storyContainer.appendChild(aiTurnEl);
+      const textContainer = aiTurnEl.querySelector('.formatted-text');
+      textContainer.classList.add('typing-cursor');
+
+      setStreamingUIState(true);
+
+      const continueInstruction = isOpening
+        ? "\n\nTugas kamu sekarang: buka babak pembuka cerita. Deskripsikan suasana lingkungan, latar waktu dan tempat, serta perkenalkan situasi awal secara mendalam dan imersif. Biarkan cerita berjalan sendiri sampai ada momen yang mengundang user untuk merespons."
+        : "\n\nTugas kamu sekarang: LANJUTKAN cerita secara natural berdasarkan 10 pesan terakhir yang ada. JANGAN menambahkan dialog atau tindakan atas nama user — hanya tulis narasi lanjutan dari sisi karaktermu dan lingkungan cerita, sesuai gaya penulisan yang sudah berjalan. Kembangkan suasana, emosi, dan alur secara imersif, lalu akhiri dengan momen yang menggoda user untuk melanjutkan.";
+
+      await streamChatCompletion({
+        messages: context,
+        systemPrompt: session.system + continueInstruction,
+        onToken: (token, fullText) => {
+          aiMsg.content = fullText;
+          aiMsg.variants[0] = fullText;
+          textContainer.innerHTML = formatRoleplayText(fullText);
+          scrollToBottom();
+        },
+        onDone: (finalText) => {
+          if (finalText) {
+            aiMsg.content = finalText;
+            aiMsg.variants[0] = finalText;
+          }
+          textContainer.classList.remove('typing-cursor');
+          textContainer.innerHTML = formatRoleplayText(aiMsg.content || "*AI menyelesaikan narasinya.*");
+          setStreamingUIState(false);
+          saveState();
+          renderSessionsList();
+          renderStoryMessages();
+        },
+        onError: (err) => {
+          textContainer.classList.remove('typing-cursor');
+          textContainer.innerHTML = `<span class="text-rose-600 font-semibold">[Kesalahan Koneksi / Router: ${escapeHtml(err.message)}]</span>`;
+          showToast(`Gagal: ${err.message}`, 'error');
+          setStreamingUIState(false);
+          saveState();
+          renderStoryMessages();
+        }
+      });
     }
 
     // --- 7. EXPORT & BACKUP ---
