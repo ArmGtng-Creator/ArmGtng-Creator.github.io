@@ -663,6 +663,14 @@
               </div>
             </div>
           </div>
+          <div class="flex flex-wrap gap-1.5 mt-2">
+            <button type="button" class="quick-model-btn px-2 py-1 rounded-lg border text-[10px] font-mono opacity-80 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5" style="border-color: var(--border-color);" data-model="deepseek-v4-flash">deepseek-v4-flash</button>
+            <button type="button" class="quick-model-btn px-2 py-1 rounded-lg border text-[10px] font-mono opacity-80 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5" style="border-color: var(--border-color);" data-model="gemini-3.7-flash-high">gemini-3.7-flash-high</button>
+            <button type="button" class="quick-model-btn px-2 py-1 rounded-lg border text-[10px] font-mono opacity-80 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5" style="border-color: var(--border-color);" data-model="gpt-5.6-luna">gpt-5.6-luna</button>
+            <button type="button" class="quick-model-btn px-2 py-1 rounded-lg border text-[10px] font-mono opacity-80 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5" style="border-color: var(--border-color);" data-model="grok-4.6">grok-4.6</button>
+            <button type="button" class="quick-model-btn px-2 py-1 rounded-lg border text-[10px] font-mono opacity-80 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5" style="border-color: var(--border-color);" data-model="kimi-k3">kimi-k3</button>
+            <button type="button" class="quick-model-btn px-2 py-1 rounded-lg border text-[10px] font-mono opacity-80 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5" style="border-color: var(--border-color);" data-model="minimax-m3">minimax-m3</button>
+          </div>
           <p id="model-fetch-status" class="text-[11px] mt-1" style="color: var(--text-subtle);"></p>
         </div>
 
@@ -2293,6 +2301,16 @@
           if (url) {
             document.getElementById('input-api-url').value = url;
             document.getElementById('input-api-url').focus();
+          }
+        });
+      });
+
+      document.querySelectorAll('.quick-model-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const model = btn.getAttribute('data-model');
+          if (model) {
+            document.getElementById('input-custom-model').value = model;
+            document.getElementById('input-custom-model').focus();
           }
         });
       });
