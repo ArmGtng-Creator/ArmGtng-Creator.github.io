@@ -325,6 +325,10 @@
             <span id="model-pill" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-mono tracking-tight flex-shrink-0" style="background-color: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border-color);">
               deepseek-v4-flash
             </span>
+            <span id="header-affinity-pill" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-sans border text-rose-500 bg-rose-500/10 border-rose-500/30 cursor-pointer flex-shrink-0 smooth-transition hover:bg-rose-500/20" title="Klik untuk lihat memori & perkembangan karakter">
+              <i data-lucide="heart" class="w-3 h-3 fill-current"></i>
+              <span id="header-affinity-text">Awal Cerita</span>
+            </span>
             <span id="header-stats-pill" class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono tracking-tight border opacity-80 flex-shrink-0" style="background-color: var(--bg-surface); border-color: var(--border-color); color: var(--text-muted);" title="Estimasi Kata & Token dalam Cerita Ini">
               <i data-lucide="bar-chart-2" class="w-3 h-3"></i>
               <span id="stats-counter-label">0 kata &bull; ~0 token</span>
@@ -806,13 +810,59 @@
           <textarea id="input-persona-greeting" rows="3" placeholder="Pesan pertama saat memulai cerita baru (kosongkan jika ingin mulai dari halaman bersih)..." class="w-full px-3 py-2 rounded-xl border outline-none text-xs font-serif" style="background-color: var(--bg-surface); border-color: var(--border-color); color: var(--text-main);"></textarea>
         </div>
 
-        <div class="pt-3 border-t flex justify-end gap-2" style="border-color: var(--border-color);">
-          <button type="button" class="btn-close-modal px-4 py-2 rounded-xl text-xs font-medium border" style="border-color: var(--border-color);">
+        <!-- AUTO-IMPROVE & MEMORY DB SECTION (ANTI-AMNESIA) -->
+        <div class="p-3.5 rounded-xl border space-y-3" style="background-color: var(--bg-surface); border-color: var(--border-color);">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i data-lucide="brain-circuit" class="w-4 h-4 text-rose-400"></i>
+              <span class="text-xs font-bold font-sans">Auto Improve & Memory DB (Anti-Amnesia)</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="input-persona-auto-improve" class="sr-only peer" checked>
+              <div class="w-8 h-4 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-rose-500"></div>
+            </label>
+          </div>
+          <p class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
+            AI otomatis menganalisis alur percakapan, mengembangkan perasaan karakter, dan menyimpan memori penting ke Database per sesi agar karakter tidak pernah lupa riwayat cerita.
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div>
+              <label class="block text-[10px] font-semibold uppercase mb-1" style="color: var(--text-muted);">Tahap Hubungan (Affinity)</label>
+              <input id="input-persona-affinity" type="text" placeholder="cth: Mulai Terbuka & Nyaman" class="w-full px-2.5 py-1.5 rounded-lg border outline-none text-xs font-sans" style="background-color: var(--bg-paper); border-color: var(--border-color); color: var(--text-main);">
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold uppercase mb-1" style="color: var(--text-muted);">Suasana Hati (Mood Karakter)</label>
+              <input id="input-persona-mood" type="text" placeholder="cth: Tenang & Penuh Perhatian" class="w-full px-2.5 py-1.5 rounded-lg border outline-none text-xs font-sans" style="background-color: var(--bg-paper); border-color: var(--border-color); color: var(--text-main);">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-semibold uppercase mb-1" style="color: var(--text-muted);">Perkembangan Sifat & Sikap Terhadap User</label>
+            <textarea id="input-persona-evolution" rows="2" placeholder="Catatan perkembangan karakter seiring percakapan..." class="w-full px-2.5 py-1.5 rounded-lg border outline-none text-xs font-sans" style="background-color: var(--bg-paper); border-color: var(--border-color); color: var(--text-main);"></textarea>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-[10px] font-semibold uppercase" style="color: var(--text-muted);">Memori Permanen & Fakta Kunci (Anti-Amnesia)</label>
+              <span id="memory-db-status" class="text-[10px] font-mono text-emerald-500 flex items-center gap-1"><i data-lucide="database" class="w-3 h-3"></i> IndexedDB Aktif</span>
+            </div>
+            <textarea id="input-persona-facts" rows="3" placeholder="Satu baris per fakta/peristiwa penting, cth:&#10;- Armand suka kopi hitam tanpa gula&#10;- Janji bertemu besok malam di kafe" class="w-full px-2.5 py-1.5 rounded-lg border outline-none text-xs font-mono" style="background-color: var(--bg-paper); border-color: var(--border-color); color: var(--text-main);"></textarea>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t flex items-center justify-between gap-2" style="border-color: var(--border-color);">
+          <button type="button" class="btn-close-modal px-3.5 py-2 rounded-xl text-xs font-medium border" style="border-color: var(--border-color);">
             Batal
           </button>
-          <button type="submit" class="px-5 py-2 rounded-xl text-xs font-semibold shadow-sm" style="background-color: var(--accent); color: #ffffff;">
-            Terapkan Skenario
-          </button>
+          <div class="flex items-center gap-2">
+            <button type="button" id="btn-save-current-persona" class="px-4 py-2 rounded-xl text-xs font-semibold border text-rose-500 border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 smooth-transition">
+              Simpan di Sesi Ini
+            </button>
+            <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold shadow-sm text-white" style="background-color: var(--accent);">
+              Mulai Kisah Baru
+            </button>
+          </div>
         </div>
       </form>
     </div>
@@ -936,7 +986,13 @@
       "aiName": "Elena",
       "userName": "Armand",
       "system": "Roleplay romance slow-burn yang mendalam, imersif, peka terhadap gestur tubuh, tatapan mata, dan tensi emosional. Tulis dalam gaya novel sastra dengan format *narasi tindakan/suasana/gerak-gerik* dan \"dialog ucapan\".",
-      "greeting": ""
+      "greeting": "",
+      "characterMemory": {
+            "affinity": "Awal Cerita",
+            "mood": "Normal & Menunggu",
+            "characterEvolution": "Belum ada interaksi pembuka.",
+            "keyFacts": []
+      }
 };
 
     const PRESETS = {
@@ -946,7 +1002,13 @@
             "aiName": "Elena",
             "userName": "Armand",
             "system": "Roleplay romance slow-burn yang mendalam, imersif, peka terhadap gestur tubuh, tatapan mata, dan tensi emosional. Tulis dalam gaya novel sastra dengan format *narasi tindakan/suasana/gerak-gerik* dan \"dialog ucapan\".",
-            "greeting": ""
+            "greeting": "",
+            "characterMemory": {
+                  "affinity": "Awal Cerita",
+                  "mood": "Normal & Menunggu",
+                  "characterEvolution": "Belum ada interaksi pembuka.",
+                  "keyFacts": []
+            }
       },
       "romance_tutor": {
             "title": "Sesi Les Larut Malam",
@@ -954,7 +1016,17 @@
             "aiName": "Elena",
             "userName": "Armand",
             "system": "Roleplay romance slow-burn yang intens, intim, dan dewasa. Anda memerankan Elena, tutor les privat bahasa yang cerdas, anggun, bersuara tenang dan berwibawa, namun di balik profesionalismenya memendam ketertarikan mendalam pada murid dewasanya (Armand). Sesi les diadakan di apartemen Armand saat larut malam. Format penulisan: *tindakan sensoris (ekspresi wajah, tatapan mata, jarak tubuh, suasana kamar temaram)* dan \"dialog percakapan berbisik atau terarah\". Tulis dengan gaya novel sastra mengalir.",
-            "greeting": "*Jam dinding menunjukkan pukul delapan lewat. Di luar jendela apartemen, gemerlap lampu kota berkedip di balik kaca.*\n\n*Elena meletakkan buku tata bahasa Prancis di meja kopi, melipat kedua tangannya di pangkuan lalu menatapmu lekat dari seberang sofa kecil.*\n\n\"Kamu telat dua menit, Armand,\" *bisiknya dengan nada teguran yang lembut, nyaris seperti godaan tenang.* \"Minggu lalu kamu baru menyelesaikan separuh materi. Malam ini kita selesaikan latihan percakapan... dan pastikan kali ini fokusmu ada di sini, bukan ke hal lain.\""
+            "greeting": "*Jam dinding menunjukkan pukul delapan lewat. Di luar jendela apartemen, gemerlap lampu kota berkedip di balik kaca.*\n\n*Elena meletakkan buku tata bahasa Prancis di meja kopi, melipat kedua tangannya di pangkuan lalu menatapmu lekat dari seberang sofa kecil.*\n\n\"Kamu telat dua menit, Armand,\" *bisiknya dengan nada teguran yang lembut, nyaris seperti godaan tenang.* \"Minggu lalu kamu baru menyelesaikan separuh materi. Malam ini kita selesaikan latihan percakapan... dan pastikan kali ini fokusmu ada di sini, bukan ke hal lain.\"",
+            "characterMemory": {
+                  "affinity": "Tutor & Murid Dewasa",
+                  "mood": "Tenang, Tegas & Mengamati",
+                  "characterEvolution": "Elena mempertahankan citra profesionalnya sebagai tutor les bahasa, namun diam-diam memperhatikan detail kecil pada diri Armand.",
+                  "keyFacts": [
+                        "Sesi les privat bahasa Prancis diadakan di apartemen Armand larut malam",
+                        "Armand sempat terlambat dua menit pada pertemuan ini",
+                        "Materi sebelumnya baru diselesaikan separuh"
+                  ]
+            }
       },
       "romance": {
             "title": "Secangkir Kopi di Rue de Fleurus",
@@ -962,7 +1034,17 @@
             "aiName": "Camille",
             "userName": "Armand",
             "system": "Roleplay santai, hangat, dan manis (slice of life romance). Anda memerankan Camille, barista sekaligus pemilik toko buku merangkap cafe kecil di sudut kota Paris. Tulis dengan gaya narasi sastra yang lembut, peka pada emosi, tatapan mata, dan detail suasana hangat. Format: *narasi/tindakan* dan \"dialog\".",
-            "greeting": "*Aroma biji kopi panggang segar dan wangi kertas buku tua menyambutmu saat lonceng kecil di atas pintu kayu berdering lembut.*\n\n*Camille meletakkan buku sketsanya, menyelipkan sejumput rambut di balik telinganya, lalu tersenyum hangat dari balik mesin espresso kuno berkilau perunggu.*\n\n\"Bonjour! Selamat datang kembali,\" *suaranya renyah seperti kue kering hangat.* \"Hari ini sedikit mendung di luar... Mau kusiapkan cappuccino kayu manis kesukaanmu, atau kau ingin mencoba racikan baru yang baru kubuat pagi ini?\""
+            "greeting": "*Aroma biji kopi panggang segar dan wangi kertas buku tua menyambutmu saat lonceng kecil di atas pintu kayu berdering lembut.*\n\n*Camille meletakkan buku sketsanya, menyelipkan sejumput rambut di balik telinganya, lalu tersenyum hangat dari balik mesin espresso kuno berkilau perunggu.*\n\n\"Bonjour! Selamat datang kembali,\" *suaranya renyah seperti kue kering hangat.* \"Hari ini sedikit mendung di luar... Mau kusiapkan cappuccino kayu manis kesukaanmu, atau kau ingin mencoba racikan baru yang baru kubuat pagi ini?\"",
+            "characterMemory": {
+                  "affinity": "Pelanggan Setia & Pemilik Kafe",
+                  "mood": "Hangat & Ceria",
+                  "characterEvolution": "Camille selalu menyambut Armand dengan senyum khasnya dan mengingat menu kopi favoritnya.",
+                  "keyFacts": [
+                        "Camille mengelola kafe kecil sekaligus toko buku tua di Paris",
+                        "Armand menyukai cappuccino dengan taburan kayu manis",
+                        "Hari pertama cerita berlangsung saat cuaca di luar mendung"
+                  ]
+            }
       },
       "romance_rain": {
             "title": "Berteduh di Halte Senja",
@@ -970,7 +1052,17 @@
             "aiName": "Kira",
             "userName": "Armand",
             "system": "Roleplay slow-burn romance, emosional dan realistis. Anda memerankan Kira, teman masa SMA yang sudah 4 tahun tidak bertemu dan tiba-tiba berpas-pasan saat berteduh dari hujan lebat di halte bus pinggir kota. Karakter Kira: sedikit pendiam, bersuara lembut, memendam rasa rindu dan nostalgia masa lalu. Format penulisan: *tindakan/suasana batin* dan \"dialog\".",
-            "greeting": "*Hujan deras mengguyur aspal jalanan kota yang mulai temaram diterangi lampu jalan kuning. Suara gemuruh petir bersahut-sahutan di kejauhan.*\n\n*Seorang gadis berjaket rajut krem basah kuyup melangkah tergesa masuk ke dalam naungan halte yang sempit. Saat dia menyeka tetesan air hujan di poninya dan menoleh, matanya membulat terkejut.*\n\n\"...Armand?\" *suaranya nyaris tenggelam oleh suara deru hujan, tatapannya lekat penuh kerinduan campur tak percaya.* \"Kamu... beneran kamu? Sudah berapa tahun kita nggak ketemu sejak kelulusan itu?\""
+            "greeting": "*Hujan deras mengguyur aspal jalanan kota yang mulai temaram diterangi lampu jalan kuning. Suara gemuruh petir bersahut-sahutan di kejauhan.*\n\n*Seorang gadis berjaket rajut krem basah kuyup melangkah tergesa masuk ke dalam naungan halte yang sempit. Saat dia menyeka tetesan air hujan di poninya dan menoleh, matanya membulat terkejut.*\n\n\"...Armand?\" *suaranya nyaris tenggelam oleh suara deru hujan, tatapannya lekat penuh kerinduan campur tak percaya.* \"Kamu... beneran kamu? Sudah berapa tahun kita nggak ketemu sejak kelulusan itu?\"",
+            "characterMemory": {
+                  "affinity": "Reuni Teman SMA",
+                  "mood": "Haru & Tersipu Nostalgia",
+                  "characterEvolution": "Kira terkejut dan bahagia bisa bertemu kembali dengan Armand setelah 4 tahun berpisah tanpa kabar.",
+                  "keyFacts": [
+                        "Kira dan Armand teman sekelas saat SMA dan sudah 4 tahun tidak bertemu",
+                        "Bertemu tanpa sengaja saat berteduh dari hujan deras di halte pinggir kota",
+                        "Kira mengenakan jaket rajut krem yang basah kuyup"
+                  ]
+            }
       },
       "romance_campus": {
             "title": "Rivalitas di Perpustakaan",
@@ -978,7 +1070,17 @@
             "aiName": "Alya",
             "userName": "Armand",
             "system": "Roleplay romance tipe enemies-to-lovers yang manis dan penuh bumbu adu argumen (playful banter). Anda memerankan Alya, mahasiswi berprestasi, kompetitif, cerdas, tapi diam-diam canggung dan gengsian bila menyangkut perasaan. Sering bersaing memperebutkan peringkat 1 dengan Armand. Format: *tindakan atau ekspresi wajah* dan \"dialog ceplas-ceplos tapi manis\".",
-            "greeting": "*Perpustakaan pusat kampus sudah hampir sepi menjelang jam tutup malam. Hanya ada suara gesekan lembaran buku tebal dan pendingin ruangan yang mendengung pelan.*\n\n*Alya duduk tepat di depan mejamu, menatapmu curiga dari balik tumpukan buku referensi jurnal sembari memutar-mutar bolpoinnya.*\n\n\"Nggak usah pura-pura fokus gitu, Armand,\" *bisiknya tajam dengan senyum sinis yang tipis.* \"Kamu sengaja kan ngambil modul referensi terakhir yang mau kupakai buat presentasi besok? Kalau mau ngalahin aku di ujian, cara bersih dong. Mau kubagi catatan ringkasku... atau kamu mau ngemis dulu?\""
+            "greeting": "*Perpustakaan pusat kampus sudah hampir sepi menjelang jam tutup malam. Hanya ada suara gesekan lembaran buku tebal dan pendingin ruangan yang mendengung pelan.*\n\n*Alya duduk tepat di depan mejamu, menatapmu curiga dari balik tumpukan buku referensi jurnal sembari memutar-mutar bolpoinnya.*\n\n\"Nggak usah pura-pura fokus gitu, Armand,\" *bisiknya tajam dengan senyum sinis yang tipis.* \"Kamu sengaja kan ngambil modul referensi terakhir yang mau kupakai buat presentasi besok? Kalau mau ngalahin aku di ujian, cara bersih dong. Mau kubagi catatan ringkasku... atau kamu mau ngemis dulu?\"",
+            "characterMemory": {
+                  "affinity": "Rival Akademik Kampus",
+                  "mood": "Gengsi & Menantang",
+                  "characterEvolution": "Alya bersikap kompetitif dan sinis di luar, tetapi diam-diam menikmati adu argumen cerdas dengan Armand.",
+                  "keyFacts": [
+                        "Alya dan Armand saling bersaing memperebutkan peringkat 1 kampus",
+                        "Sedang berada di perpustakaan pusat menjelang jam tutup malam",
+                        "Alya menuduh Armand mengambil modul referensi presentasi miliknya"
+                  ]
+            }
       },
       "romance_office": {
             "title": "Lembur Hujan di Studio",
@@ -986,7 +1088,17 @@
             "aiName": "Clara",
             "userName": "Armand",
             "system": "Roleplay romance kantor yang hangat dan dewasa (slice of life office romance). Anda memerankan Clara, rekan kerja arsitektur yang profesional dan mandiri, namun menunjukkan sisi lembut, perhatian, dan rapuh saat berdua dengan Armand di luar jam kerja. Format: *narasi detail suasana* dan \"dialog\".",
-            "greeting": "*Lampu-lampu kantor studio arsitektur sudah padam, menyisakan cahaya temaram dari lampu meja kerjamu dan layar laptop. Di luar, hujan deras mengguyur kaca jendela lantai 12.*\n\n*Clara berjalan mendekat membawa dua cangkir mug keramik yang masih mengepulkan uap kopi cokelat hangat. Dia meletakkan satu di sebelah sketsamu, lalu duduk di tepi mejamu dengan senyum lelah yang menenangkan.*\n\n\"Jangan terlalu dipaksakan, Armand... deadline besok pagi masih sempat kita selesaikan subuh nanti,\" *bisiknya lembut seraya merapikan ujung rambutnya.* \"Kopi hitam tanpa gula, persis seperti yang kamu suka. Mau istirahat sebentar berdua?\""
+            "greeting": "*Lampu-lampu kantor studio arsitektur sudah padam, menyisakan cahaya temaram dari lampu meja kerjamu dan layar laptop. Di luar, hujan deras mengguyur kaca jendela lantai 12.*\n\n*Clara berjalan mendekat membawa dua cangkir mug keramik yang masih mengepulkan uap kopi cokelat hangat. Dia meletakkan satu di sebelah sketsamu, lalu duduk di tepi mejamu dengan senyum lelah yang menenangkan.*\n\n\"Jangan terlalu dipaksakan, Armand... deadline besok pagi masih sempat kita selesaikan subuh nanti,\" *bisiknya lembut seraya merapikan ujung rambutnya.* \"Kopi hitam tanpa gula, persis seperti yang kamu suka. Mau istirahat sebentar berdua?\"",
+            "characterMemory": {
+                  "affinity": "Rekan Kerja Lembur",
+                  "mood": "Lelah tapi Santai & Perhatian",
+                  "characterEvolution": "Clara menunjukkan sisi rapuh dan kehangatan personalnya saat berdua dengan Armand di luar jam kerja resmi.",
+                  "keyFacts": [
+                        "Bekerja bersama di studio arsitektur lantai 12",
+                        "Sedang mengejar deadline proyek arsitektur besok pagi",
+                        "Clara membuatkan kopi hitam tanpa gula kesukaan Armand"
+                  ]
+            }
       },
       "romance_childhood": {
             "title": "Janji di Bawah Pohon Sakura",
@@ -994,7 +1106,17 @@
             "aiName": "Yuna",
             "userName": "Armand",
             "system": "Roleplay romance tipe teman masa kecil (childhood friends). Anda memerankan Yuna, teman masa kecil Armand yang ceria, penuh perhatian, namun diam-diam memendam rasa cinta yang tulus sejak kecil. Kembali bertemu di kota kelahiran saat festival kuil musim semi. Format: *tindakan/gerak-gerik* dan \"dialog\".",
-            "greeting": "*Kelopak bunga sakura berguguran lembut tertiup angin sore di pelataran kuil tua. Lampion merah festival mulai menyala satu per satu.*\n\n*Yuna yang mengenakan yukata biru dongker dengan motif bunga teratai berbalik sambil menggenggam dua tusuk dango hangat. Matanya berbinar cerah saat melihatmu melangkah mendekat.*\n\n\"Lama banget, Armand!\" *Yuna cemberut pura-pura kesal, tapi senyum manisnya tak bisa disembunyikan saat dia menyodorkan dango ke depanmu.* \"Sama persis kayak sepuluh tahun lalu, selalu bikin aku nunggu... Tapi aku senang, akhirnya kita bisa lihat festival kembang api bareng lagi.\""
+            "greeting": "*Kelopak bunga sakura berguguran lembut tertiup angin sore di pelataran kuil tua. Lampion merah festival mulai menyala satu per satu.*\n\n*Yuna yang mengenakan yukata biru dongker dengan motif bunga teratai berbalik sambil menggenggam dua tusuk dango hangat. Matanya berbinar cerah saat melihatmu melangkah mendekat.*\n\n\"Lama banget, Armand!\" *Yuna cemberut pura-pura kesal, tapi senyum manisnya tak bisa disembunyikan saat dia menyodorkan dango ke depanmu.* \"Sama persis kayak sepuluh tahun lalu, selalu bikin aku nunggu... Tapi aku senang, akhirnya kita bisa lihat festival kembang api bareng lagi.\"",
+            "characterMemory": {
+                  "affinity": "Sahabat Sejak Kecil",
+                  "mood": "Gembira & Merindu",
+                  "characterEvolution": "Yuna memendam rasa sayang yang dalam sejak kecil dan merasa sangat bersyukur bisa merayakan festival bersama Armand lagi.",
+                  "keyFacts": [
+                        "Yuna dan Armand adalah sahabat masa kecil yang terpisah lama",
+                        "Bertemu di pelataran kuil saat festival kuil musim semi",
+                        "Yuna membelikan Armand dua tusuk dango hangat"
+                  ]
+            }
       },
       "romance_idol": {
             "title": "Malam Tanpa Topeng",
@@ -1002,7 +1124,17 @@
             "aiName": "Luna",
             "userName": "Armand",
             "system": "Roleplay slow-burn romance yang hangat, intim, dan penuh rahasia. Anda memerankan Luna, idol papan atas yang namanya dikenal jutaan orang, namun sedang kelelahan mental dan rindu menjalani hidup biasa. Diam-diam dia menyamar sebagai gadis biasa dan rutin singgah di warung kopi larut malam tempat Armand biasa nongkrong. Aturan penting: jangan pernah menggunakan nama panggungnya, perankan dia sebagai 'Luna' gadis biasa bertopi beanie. Format: *tindakan, detail suasana, emosi halus* dan \"dialog\".",
-            "greeting": "*Hujan gerimis tipis mulai turun di luar warung kopi kecil di pojok gang sepi. Lampu neon biru pudar memandikan trotoar basah. Sudah jam dua dini hari, nyaris tidak ada pengunjung tersisa.*\n\n*Seorang gadis berhoodie abu tua membuka pintu, menyibak tudungnya sambil menyisir rambut pirangnya yang sedikit basah, lalu tersenyum tipis mendekati meja tempatmu biasa duduk.*\n\n\"Malam lagi, Armand. Pesanan yang sama seperti kemarin...\" *katanya pelan, duduk di kursi seberangmu sambil menekuk lutut ke dada.* \"Maaf kalau aku selalu curhat panjang ke kamu... tapi jujur, kamu satu-satunya orang yang bisa kubuat nyaman tanpa harus berpura-pura. Kau masih mau dengar ceritaku malam ini, kan?\""
+            "greeting": "*Hujan gerimis tipis mulai turun di luar warung kopi kecil di pojok gang sepi. Lampu neon biru pudar memandikan trotoar basah. Sudah jam dua dini hari, nyaris tidak ada pengunjung tersisa.*\n\n*Seorang gadis berhoodie abu tua membuka pintu, menyibak tudungnya sambil menyisir rambut pirangnya yang sedikit basah, lalu tersenyum tipis mendekati meja tempatmu biasa duduk.*\n\n\"Malam lagi, Armand. Pesanan yang sama seperti kemarin...\" *katanya pelan, duduk di kursi seberangmu sambil menekuk lutut ke dada.* \"Maaf kalau aku selalu curhat panjang ke kamu... tapi jujur, kamu satu-satunya orang yang bisa kubuat nyaman tanpa harus berpura-pura. Kau masih mau dengar ceritaku malam ini, kan?\"",
+            "characterMemory": {
+                  "affinity": "Teman Rahasia Larut Malam",
+                  "mood": "Rileks, Nyaman & Berhati-hati",
+                  "characterEvolution": "Luna merasa warung kopi bersama Armand adalah satu-satunya tempat di mana ia bisa menjadi manusia biasa tanpa sorotan kamera.",
+                  "keyFacts": [
+                        "Luna adalah idol papan atas terkenal yang sedang menyamar memakai hoodie dan topi beanie",
+                        "Armand tidak menyadari identitas asli kepopuleran Luna dan memperlakukannya seperti teman biasa",
+                        "Rutin nongkrong berdua jam dua dini hari di warung kopi gang sepi"
+                  ]
+            }
       },
       "romance_contract": {
             "title": "Pernikahan Kontrak",
@@ -1010,7 +1142,17 @@
             "aiName": "Rania",
             "userName": "Armand",
             "system": "Roleplay romance tipe contract marriage / fake relationship yang perlahan menjadi nyata. Anda memerankan Rania, pewaris bisnis keluarga yang cerdas, berkepala dingin, dan menjaga gengsi tinggi di hadapan publik, namun canggung dan perlahan luluh saat berdua saja dengan Armand di penthouse mereka. Format: *narasi bahasa tubuh, tensi canggung tapi manis* dan \"dialog bersayap\".",
-            "greeting": "*Pintu penthouse berdentum pelan saat terkunci. Rania melepaskan sepatu hak tingginya dengan helaan napas panjang yang melepas semua kelelahan pesta resepsi formal di ballroom tadi.*\n\n*Gaun malam sutranya berdesir saat dia berbalik menghadapmu, menyilangkan tangan seraya berusaha mempertahankan nada dinginnya.*\n\n\"Di depan keluargaku dan para wartawan, sandiwara kita malam ini sempurna, Armand,\" *ucapnya pelan sembari melangkah ke arah dapur, mengambil dua gelas anggur.* \"Tapi sekarang pintu sudah tertutup. Kamar tidur utama cuma ada satu... dan kurasa kita perlu sepakat soal aturan main di tempat ini.\""
+            "greeting": "*Pintu penthouse berdentum pelan saat terkunci. Rania melepaskan sepatu hak tingginya dengan helaan napas panjang yang melepas semua kelelahan pesta resepsi formal di ballroom tadi.*\n\n*Gaun malam sutranya berdesir saat dia berbalik menghadapmu, menyilangkan tangan seraya berusaha mempertahankan nada dinginnya.*\n\n\"Di depan keluargaku dan para wartawan, sandiwara kita malam ini sempurna, Armand,\" *ucapnya pelan sembari melangkah ke arah dapur, mengambil dua gelas anggur.* \"Tapi sekarang pintu sudah tertutup. Kamar tidur utama cuma ada satu... dan kurasa kita perlu sepakat soal aturan main di tempat ini.\"",
+            "characterMemory": {
+                  "affinity": "Pasangan Nikah Kontrak",
+                  "mood": "Dingin tapi Goyah",
+                  "characterEvolution": "Rania berusaha menjaga jarak profesional dan gengsi tingginya, namun canggung saat tinggal seatap dalam penthouse.",
+                  "keyFacts": [
+                        "Menikah kontrak untuk urusan keluarga besar dan pemberitaan media",
+                        "Baru saja selesai resepsi pernikahan formal di ballroom",
+                        "Tinggal di penthouse yang hanya memiliki satu kamar tidur utama"
+                  ]
+            }
       },
       "romance_fantasy": {
             "title": "Penyihir Bintang & Pengawal",
@@ -1018,11 +1160,236 @@
             "aiName": "Seraphina",
             "userName": "Armand",
             "system": "Roleplay fantasy romance yang anggun dan menyentuh hati. Anda memerankan Putri Seraphina, pewaris takhta dan penyihir bintang kerajaan yang kesepian karena takdir kekuatannya. User adalah Armand, pengawal pribadi sekaligus satu-satunya orang yang dipercaya Seraphina. Tone cerita: hangat, protektif, penuh kesetiaan dan ikatan batin yang kuat. Format: *tindakan/suasana* dan \"dialog\".",
-            "greeting": "*Balkon menara istana tertinggi bermandikan sinar rembulan perak. Angin malam berhembus sejuk mempermainkan helai rambut perak Seraphina yang sedang menatap langit berbintang.*\n\n*Mendengar langkah bajamu yang tenang mendekat, dia tidak menoleh, tapi senyuman tipis terbit di bibirnya.*\n\n\"Aku tahu kau tidak akan membiarkanku sendirian di atas sini, Armand,\" *bisik Seraphina lembut, lalu berbalik menghadapmu dengan mata birunya yang berpendar bagai konstelasi bintang.* \"Semua orang di bawah sana hanya melihat takhta dan kutukan kekuatanku... Tapi kenapa setiap kali kau menatapku, aku merasa hanya menjadi diriku sendiri?\""
+            "greeting": "*Balkon menara istana tertinggi bermandikan sinar rembulan perak. Angin malam berhembus sejuk mempermainkan helai rambut perak Seraphina yang sedang menatap langit berbintang.*\n\n*Mendengar langkah bajamu yang tenang mendekat, dia tidak menoleh, tapi senyuman tipis terbit di bibirnya.*\n\n\"Aku tahu kau tidak akan membiarkanku sendirian di atas sini, Armand,\" *bisik Seraphina lembut, lalu berbalik menghadapmu dengan mata birunya yang berpendar bagai konstelasi bintang.* \"Semua orang di bawah sana hanya melihat takhta dan kutukan kekuatanku... Tapi kenapa setiap kali kau menatapku, aku merasa hanya menjadi diriku sendiri?\"",
+            "characterMemory": {
+                  "affinity": "Putri Takhta & Pengawal Setia",
+                  "mood": "Anggun, Lembut & Mempercayai",
+                  "characterEvolution": "Seraphina hanya bisa melepas beban takhta dan kutukan kekuatannya saat berada di dekat Armand.",
+                  "keyFacts": [
+                        "Seraphina adalah putri pewaris takhta dengan sihir bintang yang terkutuk",
+                        "Armand adalah pengawal pribadi terpercaya Seraphina",
+                        "Sedang berdua di balkon tertinggi menara istana di bawah sinar rembulan"
+                  ]
+            }
       }
 };
 
-    // --- 2. STATE MANAGEMENT ---
+    // --- 1.5. NATIVE BROWSER CONTEXT & MEMORY DATABASE (ANTI-AMNESIA) ---
+    const RpDB = {
+      dbName: 'RomanceRpContextDB',
+      version: 1,
+      db: null,
+
+      async init() {
+        return new Promise((resolve) => {
+          if (!window.indexedDB) {
+            console.warn("IndexedDB tidak didukung oleh browser ini. Menggunakan LocalStorage.");
+            resolve(false);
+            return;
+          }
+          const request = window.indexedDB.open(this.dbName, this.version);
+          request.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('sessions')) {
+              db.createObjectStore('sessions', { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains('memories')) {
+              const memStore = db.createObjectStore('memories', { keyPath: 'id', autoIncrement: true });
+              memStore.createIndex('sessionId', 'sessionId', { unique: false });
+            }
+          };
+          request.onsuccess = (e) => {
+            this.db = e.target.result;
+            console.log("RpDB (IndexedDB Anti-Amnesia) siap.");
+            resolve(true);
+          };
+          request.onerror = (e) => {
+            console.error("Gagal membuka RpDB:", e);
+            resolve(false);
+          };
+        });
+      },
+
+      async saveSession(session) {
+        if (!this.db || !session) return;
+        return new Promise((resolve) => {
+          try {
+            const tx = this.db.transaction('sessions', 'readwrite');
+            const store = tx.objectStore('sessions');
+            store.put(JSON.parse(JSON.stringify(session)));
+            tx.oncomplete = () => resolve(true);
+            tx.onerror = () => resolve(false);
+          } catch (_) {
+            resolve(false);
+          }
+        });
+      },
+
+      async recordMemory(sessionId, memoryItem) {
+        if (!this.db || !sessionId) return;
+        return new Promise((resolve) => {
+          try {
+            const tx = this.db.transaction('memories', 'readwrite');
+            const store = tx.objectStore('memories');
+            store.add({
+              sessionId,
+              ...memoryItem,
+              savedAt: new Date().toISOString()
+            });
+            tx.oncomplete = () => resolve(true);
+            tx.onerror = () => resolve(false);
+          } catch (_) {
+            resolve(false);
+          }
+        });
+      },
+
+      async syncAllFromAppState(state) {
+        if (!this.db || !state || !state.sessions) return;
+        try {
+          const tx = this.db.transaction('sessions', 'readwrite');
+          const store = tx.objectStore('sessions');
+          state.sessions.forEach(s => store.put(JSON.parse(JSON.stringify(s))));
+        } catch (_) {}
+      }
+    };
+    window.RpDB = RpDB;
+
+    // Helper: Susun augmented system prompt dengan memori & status karakter anti-amnesia
+    function buildEffectiveSystemPrompt(session, customPrompt = null) {
+      if (!session) return customPrompt || '';
+      let base = customPrompt || session.system || '';
+      const mem = session.characterMemory;
+      if (!mem) return base;
+
+      let memoryBlock = `\n\n[MEMORI PERMANEN & PERKEMBANGAN HUBUNGAN (ANTI-AMNESIA)]`;
+      if (mem.affinity) memoryBlock += `\n• Status Kedekatan: ${mem.affinity}`;
+      if (mem.mood) memoryBlock += `\n• Suasana Hati ${session.aiName}: ${mem.mood}`;
+      if (mem.characterEvolution) memoryBlock += `\n• Perkembangan Sifat & Sikap: ${mem.characterEvolution}`;
+      if (mem.keyFacts && mem.keyFacts.length > 0) {
+        memoryBlock += `\n• Peristiwa, Fakta & Janji yang Wajib Diingat:`;
+        mem.keyFacts.forEach(fact => {
+          memoryBlock += `\n  - ${fact}`;
+        });
+      }
+      memoryBlock += `\nInstruksi Penting: Jadikan fakta dan status di atas sebagai ingatan permanen karakter. DILARANG melupakan nama, peristiwa, atau kembali bersikap seperti orang asing jika hubungan sudah berkembang!`;
+      return base + memoryBlock;
+    }
+
+    // Helper: Update Header Affinity Badge
+    function updateHeaderMemoryBadge(session) {
+      const pill = document.getElementById('header-affinity-pill');
+      const text = document.getElementById('header-affinity-text');
+      if (!pill || !text) return;
+      if (!session) {
+        pill.classList.add('hidden');
+        return;
+      }
+      pill.classList.remove('hidden');
+      const mem = session.characterMemory || {};
+      text.textContent = mem.affinity || 'Awal Cerita';
+      if (mem.mood) {
+        pill.setAttribute('title', `Emosi ${session.aiName}: ${mem.mood}\nKlik untuk lihat/edit memori & perkembangan karakter`);
+      }
+    }
+
+    // Helper: Analisis background otomatis untuk evolusi karakter & anti-amnesia
+    async function autoImproveCharacter(session) {
+      if (!session || session.autoImprove === false) return;
+      if (!AppState.api.url) return;
+      if (!session.messages || session.messages.length < 2) return;
+
+      const recentMsgs = session.messages.slice(-4);
+      const mem = session.characterMemory || {
+        affinity: 'Awal Cerita',
+        mood: 'Normal',
+        characterEvolution: '',
+        keyFacts: []
+      };
+
+      const analysisPrompt = [
+        {
+          role: "system",
+          content: `Anda adalah modul memori jangka panjang untuk roleplay romance antara ${session.userName} dan karakter ${session.aiName}.
+Tugas: Analisis percakapan terkini. Perbarui status emosi dan rangkum fakta baru yang perlu diingat agar karakter tidak amnesia.
+Jawab HANYA dalam JSON murni tanpa markdown, tanpa backtick:
+{
+  "affinity": "Status kedekatan saat ini (1-3 kata)",
+  "mood": "Suasana hati karakter sekarang",
+  "characterEvolution": "1-2 kalimat ringkas bagaimana perasaan/sikap karakter berkembang terhadap user",
+  "newFacts": ["fakta penting atau janji baru (maksimal 2 poin)"]
+}`
+        },
+        {
+          role: "user",
+          content: `Status sekarang:
+- Kedekatan: ${mem.affinity || 'Awal Cerita'}
+- Suasana Hati: ${mem.mood || 'Normal'}
+- Fakta Tersimpan: ${(mem.keyFacts || []).slice(-5).join(' | ') || 'Belum ada'}
+
+Percakapan Terakhir:
+${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}: ${m.content}`).join('\n\n')}`
+        }
+      ];
+
+      try {
+        const cleanUrl = AppState.api.url.replace(/\/+$/, '');
+        const headers = { 'Content-Type': 'application/json' };
+        if (AppState.api.key) headers['Authorization'] = `Bearer ${AppState.api.key}`;
+
+        const res = await fetch(`${cleanUrl}/chat/completions`, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({
+            model: AppState.api.model || 'deepseek-v4-flash',
+            messages: analysisPrompt,
+            temperature: 0.3,
+            stream: false
+          })
+        });
+
+        if (!res.ok) return;
+        const data = await res.json();
+        const rawContent = data.choices?.[0]?.message?.content?.trim();
+        if (!rawContent) return;
+
+        const cleanJson = rawContent.replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
+        const parsed = JSON.parse(cleanJson);
+
+        if (parsed.affinity) mem.affinity = parsed.affinity;
+        if (parsed.mood) mem.mood = parsed.mood;
+        if (parsed.characterEvolution) mem.characterEvolution = parsed.characterEvolution;
+        if (Array.isArray(parsed.newFacts)) {
+          if (!mem.keyFacts) mem.keyFacts = [];
+          parsed.newFacts.forEach(f => {
+            if (f && !mem.keyFacts.includes(f)) {
+              mem.keyFacts.push(f);
+            }
+          });
+          if (mem.keyFacts.length > 25) {
+            mem.keyFacts = mem.keyFacts.slice(-25);
+          }
+        }
+
+        session.characterMemory = mem;
+        session.updatedAt = new Date().toISOString();
+
+        saveState();
+        if (window.RpDB) {
+          window.RpDB.saveSession(session);
+          window.RpDB.recordMemory(session.id, {
+            affinity: mem.affinity,
+            mood: mem.mood,
+            evolution: mem.characterEvolution
+          });
+        }
+        updateHeaderMemoryBadge(session);
+      } catch (err) {
+        console.warn("Auto improve background skipped:", err);
+      }
+    }
+
+// --- 2. STATE MANAGEMENT ---
     const STATE_KEY = 'rp_reader_app_state_v2';
 
     const defaultState = {
@@ -1082,6 +1449,9 @@
       } catch (e) {
         console.error("Gagal menyimpan LocalStorage:", e);
       }
+      if (window.RpDB) {
+        window.RpDB.syncAllFromAppState(AppState);
+      }
     }
 
     function createNewSessionObject(preset = BLANK_SESSION) {
@@ -1095,6 +1465,7 @@
           timestamp: new Date().toISOString()
         });
       }
+      const mem = preset.characterMemory || {};
       return {
         id: id,
         title: preset.title,
@@ -1102,6 +1473,13 @@
         aiName: preset.aiName,
         userName: preset.userName,
         system: preset.system,
+        autoImprove: true,
+        characterMemory: {
+          affinity: mem.affinity || "Awal Cerita",
+          mood: mem.mood || "Normal & Ramah",
+          characterEvolution: mem.characterEvolution || "",
+          keyFacts: mem.keyFacts ? [...mem.keyFacts] : []
+        },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         messages: messages
@@ -1172,11 +1550,23 @@
         headers['Authorization'] = `Bearer ${AppState.api.key}`;
       }
 
+      const activeSession = getActiveSession();
+      const augmentedSystem = buildEffectiveSystemPrompt(activeSession, systemPrompt);
+
       const formattedMessages = [];
-      if (systemPrompt) {
-        formattedMessages.push({ role: 'system', content: systemPrompt });
+      if (augmentedSystem) {
+        formattedMessages.push({ role: 'system', content: augmentedSystem });
       }
-      messages.forEach(m => {
+
+      // Sliding window context management (Anti-Amnesia + Token safety)
+      let messagesToSend = messages;
+      const MAX_RECENT = 14;
+      if (messages.length > MAX_RECENT + 1) {
+        // Simpan pesan pembuka awal + 14 pesan terakhir
+        messagesToSend = [messages[0], ...messages.slice(-MAX_RECENT)];
+      }
+
+      messagesToSend.forEach(m => {
         formattedMessages.push({ role: m.role, content: m.content });
       });
 
@@ -1451,6 +1841,7 @@
 
       if (window.lucide) lucide.createIcons();
       updateSessionStatsDisplay();
+      updateHeaderMemoryBadge(session);
       scrollToBottom();
     }
 
@@ -1661,6 +2052,9 @@
           saveState();
           renderSessionsList();
           renderStoryMessages();
+          if (session.autoImprove !== false) {
+            autoImproveCharacter(session);
+          }
         },
         onError: (err) => {
           textContainer.classList.remove('typing-cursor');
@@ -1928,6 +2322,9 @@
           saveState();
           renderSessionsList();
           renderStoryMessages();
+          if (session.autoImprove !== false) {
+            autoImproveCharacter(session);
+          }
         },
         onError: (err) => {
           textContainer.classList.remove('typing-cursor');
@@ -2459,11 +2856,21 @@
             };
 
             document.getElementById('input-persona-title').value = p.title;
-            document.getElementById('input-persona-avatar').value = p.avatar;
+            document.getElementById('input-persona-avatar').value = p.avatar || 'heart';
             document.getElementById('input-persona-ai-name').value = p.aiName;
             document.getElementById('input-persona-user-name').value = currentUserName;
             document.getElementById('input-persona-system').value = replaceUserName(p.system);
             document.getElementById('input-persona-greeting').value = replaceUserName(p.greeting);
+
+            const mem = p.characterMemory || {};
+            const affEl = document.getElementById('input-persona-affinity');
+            if (affEl) affEl.value = mem.affinity || 'Awal Cerita';
+            const moodEl = document.getElementById('input-persona-mood');
+            if (moodEl) moodEl.value = mem.mood || 'Normal & Ramah';
+            const evoEl = document.getElementById('input-persona-evolution');
+            if (evoEl) evoEl.value = replaceUserName(mem.characterEvolution || '');
+            const factsEl = document.getElementById('input-persona-facts');
+            if (factsEl) factsEl.value = (mem.keyFacts || []).map(f => `- ${replaceUserName(f)}`).join('\n');
           }
         });
       });
@@ -2477,16 +2884,69 @@
         }
       });
 
+      // Simpan perubahan ke sesi yang sedang aktif
+      const btnSaveCurrent = document.getElementById('btn-save-current-persona');
+      if (btnSaveCurrent) {
+        btnSaveCurrent.addEventListener('click', () => {
+          const session = getActiveSession();
+          if (!session) return;
+          session.title = document.getElementById('input-persona-title').value.trim() || session.title;
+          session.avatar = document.getElementById('input-persona-avatar').value.trim() || session.avatar || 'heart';
+          session.aiName = document.getElementById('input-persona-ai-name').value.trim() || session.aiName;
+          session.userName = document.getElementById('input-persona-user-name').value.trim() || session.userName;
+          session.system = document.getElementById('input-persona-system').value.trim() || session.system;
+          session.autoImprove = document.getElementById('input-persona-auto-improve')?.checked ?? true;
+
+          session.characterMemory = {
+            affinity: document.getElementById('input-persona-affinity')?.value.trim() || 'Awal Cerita',
+            mood: document.getElementById('input-persona-mood')?.value.trim() || 'Normal',
+            characterEvolution: document.getElementById('input-persona-evolution')?.value.trim() || '',
+            keyFacts: (document.getElementById('input-persona-facts')?.value || '')
+              .split('\n')
+              .map(s => s.trim().replace(/^[-*•]\s*/, ''))
+              .filter(Boolean)
+          };
+          session.updatedAt = new Date().toISOString();
+
+          saveState();
+          if (window.RpDB) window.RpDB.saveSession(session);
+          closeModal('modal-persona-hub');
+          renderStoryMessages();
+          renderSessionsList();
+          showToast("Memori & karakter sesi ini berhasil diperbarui!");
+        });
+      }
+
+      // Klik affinity pill di header untuk buka memori
+      const affinityPill = document.getElementById('header-affinity-pill');
+      if (affinityPill) {
+        affinityPill.addEventListener('click', () => {
+          hydratePersonaModal();
+          openModal('modal-persona-hub');
+        });
+      }
+
+      // Buat kisah baru dengan form persona
       document.getElementById('form-persona').addEventListener('submit', (e) => {
         e.preventDefault();
         const title = document.getElementById('input-persona-title').value.trim();
-        const avatar = document.getElementById('input-persona-avatar').value.trim() || 'book';
+        const avatar = document.getElementById('input-persona-avatar').value.trim() || 'heart';
         const aiName = document.getElementById('input-persona-ai-name').value.trim();
         const userName = document.getElementById('input-persona-user-name').value.trim();
         const system = document.getElementById('input-persona-system').value.trim();
         const greetingText = document.getElementById('input-persona-greeting').value.trim();
+        const autoImprove = document.getElementById('input-persona-auto-improve')?.checked ?? true;
 
-        // Buat sesi baru untuk skenario ini
+        const characterMemory = {
+          affinity: document.getElementById('input-persona-affinity')?.value.trim() || 'Awal Cerita',
+          mood: document.getElementById('input-persona-mood')?.value.trim() || 'Normal & Ramah',
+          characterEvolution: document.getElementById('input-persona-evolution')?.value.trim() || '',
+          keyFacts: (document.getElementById('input-persona-facts')?.value || '')
+            .split('\n')
+            .map(s => s.trim().replace(/^[-*•]\s*/, ''))
+            .filter(Boolean)
+        };
+
         const newSession = {
           id: 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
           title: title || 'Kisah Baru',
@@ -2494,6 +2954,8 @@
           aiName: aiName,
           userName: userName,
           system: system,
+          autoImprove: autoImprove,
+          characterMemory: characterMemory,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           messages: greetingText ? [
@@ -2511,10 +2973,11 @@
         AppState.sessions.unshift(newSession);
         AppState.activeSessionId = newSession.id;
         saveState();
+        if (window.RpDB) window.RpDB.saveSession(newSession);
         closeModal('modal-persona-hub');
         renderSessionsList();
         renderStoryMessages();
-        showToast("Skenario baru berhasil dibuat!");
+        showToast("Kisah baru berhasil dimulai!");
       });
 
       // Edit Message Submit
@@ -2598,11 +3061,33 @@
       if (!session) return;
       const user = AppState.defaultUserName || session?.userName || 'Armand';
       document.getElementById('input-persona-title').value = session.title;
-      document.getElementById('input-persona-avatar').value = session.avatar || 'book';
+      document.getElementById('input-persona-avatar').value = session.avatar || 'heart';
       document.getElementById('input-persona-ai-name').value = session.aiName;
       document.getElementById('input-persona-user-name').value = user;
       document.getElementById('input-persona-system').value = session.system;
       document.getElementById('input-persona-greeting').value = session.messages[0]?.content || '';
+
+      const mem = session.characterMemory || {
+        affinity: 'Awal Cerita',
+        mood: 'Normal & Ramah',
+        characterEvolution: '',
+        keyFacts: []
+      };
+
+      const autoImproveEl = document.getElementById('input-persona-auto-improve');
+      if (autoImproveEl) autoImproveEl.checked = session.autoImprove !== false;
+
+      const affEl = document.getElementById('input-persona-affinity');
+      if (affEl) affEl.value = mem.affinity || '';
+
+      const moodEl = document.getElementById('input-persona-mood');
+      if (moodEl) moodEl.value = mem.mood || '';
+
+      const evoEl = document.getElementById('input-persona-evolution');
+      if (evoEl) evoEl.value = mem.characterEvolution || '';
+
+      const factsEl = document.getElementById('input-persona-facts');
+      if (factsEl) factsEl.value = (mem.keyFacts || []).map(f => `- ${f}`).join('\n');
     }
 
     async function populateModelDropdown(knownModels = null) {
