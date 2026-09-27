@@ -186,6 +186,43 @@
       letter-spacing: 0.012em;
     }
 
+    /* Thinking / Reasoning collapsible block */
+    .think-block {
+      border: 1px dashed var(--border-color);
+      border-radius: 0.75rem;
+      background-color: color-mix(in srgb, var(--bg-surface) 55%, transparent);
+      font-size: 0.82em;
+      line-height: 1.65;
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+    }
+    .think-head {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.65rem;
+      cursor: pointer;
+      user-select: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+      font-size: 0.95em;
+    }
+    .think-head:hover { background-color: color-mix(in srgb, var(--bg-surface-hover) 50%, transparent); }
+    .think-body {
+      padding: 0 0.75rem 0.6rem;
+      color: var(--text-subtle);
+      font-style: italic;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 22rem;
+      overflow-y: auto;
+    }
+    .think-block.collapsed .think-body { display: none; }
+    .think-block.collapsed .think-chevron { transform: rotate(-90deg); }
+    .think-chevron { transition: transform 0.18s ease; }
+    .think-live { color: var(--accent); }
+
     /* Roleplay Dialogue: "..." / “...” / 「...」 */
     .story-bubble-body .rp-dialogue {
       color: var(--dialogue-color);
@@ -341,6 +378,11 @@
 
     <!-- Right: Theme Switcher, Typography Settings, Focus Mode, API Config -->
     <div class="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+      <!-- Quick Thinking Toggle -->
+      <button id="btn-toggle-thinking" class="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 smooth-transition opacity-45" title="Mode Berpikir: MATI (klik untuk nyalakan)">
+        <i data-lucide="brain" class="w-4 h-4 md:w-5 md:h-5"></i>
+      </button>
+
       <!-- Quick Theme Cycle Button -->
       <button id="btn-theme-cycle" class="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 smooth-transition" title="Ganti Tema Cepat (Sepia / Midnight / OLED / Daylight)">
         <i data-lucide="sun" class="w-4 h-4 md:w-5 md:h-5"></i>
@@ -692,6 +734,33 @@
             <span>Konsisten (0.2)</span>
             <span>Seimbang (0.85)</span>
             <span>Sangat Kreatif (1.5)</span>
+          </div>
+        </div>
+
+        <!-- Thinking / Reasoning Mode -->
+        <div class="p-3.5 rounded-xl border space-y-2" style="background-color: var(--bg-surface); border-color: var(--border-color);">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i data-lucide="brain" class="w-4 h-4" style="color: var(--accent);"></i>
+              <span class="text-xs font-bold font-sans">Mode Berpikir (Thinking)</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="input-thinking-enabled" class="sr-only peer">
+              <div class="w-9 h-5 bg-gray-400/60 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
+            </label>
+          </div>
+          <p class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
+            Tampilkan proses berpikir AI sebelum jawaban akhir. Kalau <b>mati</b>, hanya jawaban akhir yang ditampilkan. Param <code class="font-mono text-[10px]">reasoning.enabled</code> juga dikirim ke router.
+          </p>
+          <div id="thinking-effort-row" class="hidden">
+            <label class="block text-[10px] font-semibold uppercase mb-1" style="color: var(--text-muted);">Kedalaman Berpikir (Reasoning Effort)</label>
+            <select id="input-thinking-effort" class="w-full px-2.5 py-1.5 rounded-lg border outline-none text-xs font-mono" style="background-color: var(--bg-paper); border-color: var(--border-color); color: var(--text-main);">
+              <option value="">Default (ikut model)</option>
+              <option value="low">low &mdash; cepat</option>
+              <option value="medium">medium</option>
+              <option value="high">high &mdash; paling teliti</option>
+              <option value="none">none &mdash; matikan thinking</option>
+            </select>
           </div>
         </div>
 
@@ -1446,7 +1515,9 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
         url: "https://9r.amgsh.my.id/v1",
         key: "",
         model: "deepseek-v4-flash",
-        temperature: 0.85
+        temperature: 0.85,
+        thinking: false,
+        thinkingEffort: ""
       },
       reader: {
         theme: "sepia",
@@ -1587,7 +1658,7 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
       return [];
     }
 
-    async function streamChatCompletion({ messages, systemPrompt, onToken, onDone, onError }) {
+    async function streamChatCompletion({ messages, systemPrompt, onToken, onReasoning, onDone, onError }) {
       if (currentAbortController) {
         currentAbortController.abort();
       }
@@ -1619,12 +1690,19 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
         formattedMessages.push({ role: m.role, content: m.content });
       });
 
+      const wantThinking = AppState.api.thinking === true;
+      const effort = (AppState.api.thinkingEffort || '').trim();
+
       const payload = {
         model: AppState.api.model || 'deepseek-v4-flash',
         messages: formattedMessages,
         temperature: parseFloat(AppState.api.temperature) || 0.85,
-        stream: true
+        stream: true,
+        // 9router/OpenRouter-style reasoning control. Providers that honour it
+        // skip thinking entirely; the rest still emit it and we simply hide it.
+        reasoning: effort ? { enabled: wantThinking, effort } : { enabled: wantThinking }
       };
+      if (effort) payload.reasoning_effort = effort;
 
       try {
         const response = await fetch(`${cleanUrl}/chat/completions`, {
@@ -1651,6 +1729,7 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
         const decoder = new TextDecoder('utf-8');
         let buffer = '';
         let fullGeneratedText = '';
+        let fullReasoningText = '';
 
         while (true) {
           const { done, value } = await reader.read();
@@ -1671,7 +1750,26 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
               try {
                 const parsed = JSON.parse(dataStr);
                 const delta = parsed.choices?.[0]?.delta;
-                if (delta?.content) {
+                if (!delta) continue;
+
+                // Reasoning arrives under different keys depending on the upstream
+                // provider: `reasoning_content` (DeepSeek-style), `reasoning`
+                // (OpenRouter-style) or `reasoning_details[].text`.
+                let reasonChunk = '';
+                if (typeof delta.reasoning_content === 'string') reasonChunk = delta.reasoning_content;
+                else if (typeof delta.reasoning === 'string') reasonChunk = delta.reasoning;
+                else if (Array.isArray(delta.reasoning_details)) {
+                  reasonChunk = delta.reasoning_details
+                    .map(d => (d && typeof d.text === 'string') ? d.text : '')
+                    .join('');
+                }
+
+                if (reasonChunk) {
+                  fullReasoningText += reasonChunk;
+                  if (onReasoning) onReasoning(reasonChunk, fullReasoningText);
+                }
+
+                if (delta.content) {
                   fullGeneratedText += delta.content;
                   onToken(delta.content, fullGeneratedText);
                 }
@@ -1680,7 +1778,7 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
           }
         }
 
-        onDone(fullGeneratedText);
+        onDone(fullGeneratedText, fullReasoningText);
       } catch (err) {
         if (err.name === 'AbortError') {
           console.log("Streaming stopped by user.");
@@ -1891,7 +1989,62 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
       if (window.lucide) lucide.createIcons();
       updateSessionStatsDisplay();
       updateHeaderMemoryBadge(session);
+      syncHeaderThinkingButton();
       scrollToBottom();
+    }
+
+    // --- Thinking / Reasoning renderer ---
+    // `thinkingEnabled` gates display only; the model may still reason regardless.
+    function renderThinkBlock(msg) {
+      if (!msg || !msg.reasoning || !String(msg.reasoning).trim()) return '';
+      if (AppState.api.thinking !== true) return '';
+      return `
+        <div class="think-block">
+          <div class="think-head">
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 think-chevron"></i>
+            <i data-lucide="brain" class="w-3.5 h-3.5"></i>
+            <span>Proses Berpikir</span>
+          </div>
+          <div class="think-body">${escapeHtml(String(msg.reasoning))}</div>
+        </div>
+      `;
+    }
+
+    // Insert or update the live thinking block inside a turn element while streaming.
+    function upsertThinkBlock(turnEl, text) {
+      if (!turnEl) return;
+      if (AppState.api.thinking !== true) return;
+      const bubble = turnEl.querySelector('.story-bubble-body');
+      if (!bubble) return;
+
+      let block = bubble.querySelector('.think-block');
+      if (!block) {
+        block = document.createElement('div');
+        block.className = 'think-block';
+        block.innerHTML = `
+          <div class="think-head">
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 think-chevron"></i>
+            <i data-lucide="brain" class="w-3.5 h-3.5"></i>
+            <span>Proses Berpikir</span>
+          </div>
+          <div class="think-body"></div>
+        `;
+        bubble.insertBefore(block, bubble.firstChild);
+        block.querySelector('.think-head').addEventListener('click', () => {
+          block.classList.toggle('collapsed');
+        });
+        if (window.lucide) lucide.createIcons();
+      }
+      const body = block.querySelector('.think-body');
+      if (body) {
+        body.textContent = text;
+        body.scrollTop = body.scrollHeight;
+      }
+    }
+
+    function collapseThinkBlock(turnEl) {
+      const block = turnEl && turnEl.querySelector('.think-block');
+      if (block) block.classList.add('collapsed');
     }
 
     function createMessageElement(msg, index, session) {
@@ -1949,6 +2102,7 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
 
       const bodyHtml = `
         <div class="rounded-2xl p-4 sm:p-5 shadow-sm smooth-transition story-bubble-body" style="${bubbleBg}">
+          ${isAI ? renderThinkBlock(msg) : ''}
           <div class="formatted-text">${formatRoleplayText(msg.content)}</div>
         </div>
       `;
@@ -1967,6 +2121,13 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
       if (nextVariantBtn) {
         nextVariantBtn.addEventListener('click', () => {
           switchTurnVariant(index, 1);
+        });
+      }
+
+      const thinkHead = wrapper.querySelector('.think-head');
+      if (thinkHead) {
+        thinkHead.addEventListener('click', () => {
+          thinkHead.closest('.think-block').classList.toggle('collapsed');
         });
       }
 
@@ -2067,6 +2228,7 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
         id: 'msg_' + (Date.now() + 1),
         role: 'assistant',
         content: '',
+        reasoning: '',
         variants: [''],
         variantIndex: 0,
         timestamp: new Date().toISOString()
@@ -2084,17 +2246,24 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
       await streamChatCompletion({
         messages: session.messages.slice(0, -1),
         systemPrompt: session.system,
+        onReasoning: (chunk, fullReasoning) => {
+          aiMsg.reasoning = fullReasoning;
+          upsertThinkBlock(aiTurnEl, fullReasoning);
+          scrollToBottom();
+        },
         onToken: (token, fullText) => {
           aiMsg.content = fullText;
           aiMsg.variants[0] = fullText;
           textContainer.innerHTML = formatRoleplayText(fullText);
           scrollToBottom();
         },
-        onDone: (finalText) => {
+        onDone: (finalText, finalReasoning) => {
           if (finalText) {
             aiMsg.content = finalText;
             aiMsg.variants[0] = finalText;
           }
+          if (finalReasoning) aiMsg.reasoning = finalReasoning;
+          collapseThinkBlock(aiTurnEl);
           textContainer.classList.remove('typing-cursor');
           textContainer.innerHTML = formatRoleplayText(aiMsg.content || "*AI menyelesaikan narasinya.*");
           setStreamingUIState(false);
@@ -2274,17 +2443,24 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
         await streamChatCompletion({
           messages: messagesToSend,
           systemPrompt: session.system,
+          onReasoning: (chunk, fullReasoning) => {
+            lastMsg.reasoning = fullReasoning;
+            if (lastEl) upsertThinkBlock(lastEl, fullReasoning);
+            scrollToBottom();
+          },
           onToken: (token, fullText) => {
             lastMsg.content = fullText;
             lastMsg.variants[newVariantIndex] = fullText;
             if (textContainer) textContainer.innerHTML = formatRoleplayText(fullText);
             scrollToBottom();
           },
-          onDone: (finalText) => {
+          onDone: (finalText, finalReasoning) => {
             if (finalText) {
               lastMsg.content = finalText;
               lastMsg.variants[newVariantIndex] = finalText;
             }
+            if (finalReasoning) lastMsg.reasoning = finalReasoning;
+            if (lastEl) collapseThinkBlock(lastEl);
             if (textContainer) {
               textContainer.classList.remove('typing-cursor');
               textContainer.innerHTML = formatRoleplayText(lastMsg.content || "*AI menyelesaikan narasinya.*");
@@ -2354,13 +2530,20 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
       await streamChatCompletion({
         messages: context,
         systemPrompt: session.system + continueInstruction,
+        onReasoning: (chunk, fullReasoning) => {
+          aiMsg.reasoning = fullReasoning;
+          upsertThinkBlock(aiTurnEl, fullReasoning);
+          scrollToBottom();
+        },
         onToken: (token, fullText) => {
           aiMsg.content = fullText;
           aiMsg.variants[0] = fullText;
           textContainer.innerHTML = formatRoleplayText(fullText);
           scrollToBottom();
         },
-        onDone: (finalText) => {
+        onDone: (finalText, finalReasoning) => {
+          if (finalReasoning) aiMsg.reasoning = finalReasoning;
+          collapseThinkBlock(aiTurnEl);
           if (finalText) {
             aiMsg.content = finalText;
             aiMsg.variants[0] = finalText;
@@ -2687,6 +2870,9 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
         document.getElementById('input-api-key').value = AppState.api.key;
         document.getElementById('input-temperature').value = AppState.api.temperature;
         document.getElementById('label-temperature').textContent = AppState.api.temperature;
+        document.getElementById('input-thinking-enabled').checked = AppState.api.thinking === true;
+        document.getElementById('input-thinking-effort').value = AppState.api.thinkingEffort || '';
+        syncThinkingUI();
         populateModelDropdown();
         openModal('modal-settings');
       });
@@ -2823,6 +3009,8 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
         AppState.api.key = document.getElementById('input-api-key').value.trim();
         AppState.api.model = manualModel || selectedModel || AppState.api.model;
         AppState.api.temperature = parseFloat(document.getElementById('input-temperature').value);
+        AppState.api.thinking = document.getElementById('input-thinking-enabled').checked;
+        AppState.api.thinkingEffort = document.getElementById('input-thinking-effort').value;
         saveState();
         updateRouterDisplay();
         closeModal('modal-settings');
@@ -2830,6 +3018,20 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
         showToast("Pengaturan API berhasil disimpan!");
       });
 
+      document.getElementById('input-temperature').addEventListener('input', (e) => {
+        document.getElementById('label-temperature').textContent = e.target.value;
+      });
+
+      // Thinking mode toggle
+      document.getElementById('input-thinking-enabled').addEventListener('change', syncThinkingUI);
+
+      document.getElementById('btn-toggle-thinking').addEventListener('click', () => {
+        AppState.api.thinking = !(AppState.api.thinking === true);
+        saveState();
+        syncHeaderThinkingButton();
+        renderStoryMessages();
+        showToast(AppState.api.thinking ? "Mode Berpikir: NYALA" : "Mode Berpikir: MATI");
+      });
       document.getElementById('input-temperature').addEventListener('input', (e) => {
         document.getElementById('label-temperature').textContent = e.target.value;
       });
@@ -3094,6 +3296,29 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
       });
     }
 
+    // Reflect the thinking state on the header quick-toggle button.
+    function syncHeaderThinkingButton() {
+      const btn = document.getElementById('btn-toggle-thinking');
+      if (!btn) return;
+      const on = AppState.api.thinking === true;
+      btn.classList.toggle('opacity-45', !on);
+      btn.classList.toggle('text-amber-500', on);
+      btn.setAttribute('title', on
+        ? 'Mode Berpikir: NYALA (klik untuk matikan)'
+        : 'Mode Berpikir: MATI (klik untuk nyalakan)');
+    }
+
+    // Enable/disable the effort selector based on the thinking toggle.
+    function syncThinkingUI() {
+      const on = document.getElementById('input-thinking-enabled').checked;
+      const row = document.getElementById('thinking-effort-row');
+      const sel = document.getElementById('input-thinking-effort');
+      if (!row || !sel) return;
+      row.classList.toggle('opacity-40', !on);
+      row.classList.toggle('pointer-events-none', !on);
+      sel.disabled = !on;
+    }
+
     function updateRouterDisplay() {
       const label = document.getElementById('sidebar-router-label');
       if (!label) return;
@@ -3172,6 +3397,8 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
       renderSessionsList();
       renderStoryMessages();
       initEventListeners();
+      syncThinkingUI();
+      syncHeaderThinkingButton();
 
       try {
         await populateModelDropdown();
