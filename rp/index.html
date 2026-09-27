@@ -3022,12 +3022,19 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
         document.getElementById('label-temperature').textContent = e.target.value;
       });
 
-      // Thinking mode toggle
-      document.getElementById('input-thinking-enabled').addEventListener('change', syncThinkingUI);
+      // Thinking mode toggle (settings modal)
+      document.getElementById('input-thinking-enabled').addEventListener('change', (e) => {
+        AppState.api.thinking = e.target.checked;
+        saveState();
+        syncThinkingUI();
+        syncHeaderThinkingButton();
+        renderStoryMessages();
+      });
 
       document.getElementById('btn-toggle-thinking').addEventListener('click', () => {
         AppState.api.thinking = !(AppState.api.thinking === true);
         saveState();
+        syncThinkingUI();
         syncHeaderThinkingButton();
         renderStoryMessages();
         showToast(AppState.api.thinking ? "Mode Berpikir: NYALA" : "Mode Berpikir: MATI");
@@ -3310,10 +3317,12 @@ ${recentMsgs.map(m => `${m.role === 'user' ? session.userName : session.aiName}:
 
     // Enable/disable the effort selector based on the thinking toggle.
     function syncThinkingUI() {
-      const on = document.getElementById('input-thinking-enabled').checked;
+      const box = document.getElementById('input-thinking-enabled');
       const row = document.getElementById('thinking-effort-row');
       const sel = document.getElementById('input-thinking-effort');
-      if (!row || !sel) return;
+      if (!box || !row || !sel) return;
+      const on = AppState.api.thinking === true;
+      box.checked = on;
       row.classList.toggle('opacity-40', !on);
       row.classList.toggle('pointer-events-none', !on);
       sel.disabled = !on;
